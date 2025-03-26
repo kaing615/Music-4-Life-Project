@@ -1,0 +1,95 @@
+.library-body {
+    width: 94%;
+    height: 90%;
+    padding: 3%;
+    display: flex;
+    flex-wrap: wrap;
+    overflow-y: auto;
+    justify-content: flex-start; /* Căn giữa danh sách */
+    gap: 20px; /* Khoảng cách giữa các playlist */
+}
+
+/* Card playlist */
+.playlist-card {
+    position: relative;
+    width: 300px; /* Điều chỉnh kích thước hợp lý */
+    height: 400px;
+    border-radius: 15px;
+    background: linear-gradient(145deg, #23344d, #1b273b);
+    box-shadow: 4px 4px 8px #131a28, -4px -4px 8px #2b405e;
+    padding: 15px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.playlist-card:hover {
+    transform: scale(1.05);
+    box-shadow: 6px 6px 12px rgba(19, 26, 40, 0.8), -6px -6px 12px rgba(43, 64, 94, 0.8);
+}
+
+/* Ảnh Playlist */
+.playlist-image {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.playlist-card:hover .playlist-image {
+    transform: scale(1.05);
+}
+
+/* Tên Playlist */
+.playlist-title {
+    font-weight: bold;
+    font-size: 16px;
+    color: #f1f1f1;
+    margin-top: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+/* Số lượng bài hát */
+.playlist-subtitle {
+    font-size: 13px;
+    color: #c4d0e3a0;
+    margin-top: 5px;
+}
+
+/* Hiệu ứng khi hover */
+.playlist-fade {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    border-radius: 15px;
+    background: linear-gradient(180deg, rgba(54, 69, 98, 0) 30%, rgba(54, 69, 98, 0.8) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.playlist-card:hover .playlist-fade {
+    opacity: 1;
+}
+
+/* Nút Play */
+.playlist-fade svg {
+    right: 10px;
+    bottom: 10px;
+    font-size: 50px;
+    color: white;
+    transition: transform 0.3s ease;
+}
+
+.playlist-card:hover .playlist-fade svg {
+    transform: scale(1.2);
+}
