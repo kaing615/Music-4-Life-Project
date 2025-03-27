@@ -61,3 +61,14 @@
 .up-next-item:hover {
     transform: scale(0.95);
 }
+
+.player-container {
+    max-height: 100vh; 
+    overflow: hidden; 
+}
+
+.right-player-body {
+    max-height: 100vh; 
+    overflow-y: auto;
+    flex: auto;
+}

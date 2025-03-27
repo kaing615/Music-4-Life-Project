@@ -7,10 +7,18 @@ import Player from "./screens/Player";
 import Trending from "./screens/Trending";
 import Sidebar from "./components/sidebar/index.jsx";
 import Login from "./screens/auth/login.jsx";
+import songs from "./data.js";
 
 function App() {
   const [token, setToken] = useState("");
   const [favoriteSongs, setFavoriteSongs] = useState([]); // Thêm state cho favoriteSongs
+  const [playlist, setPlaylist] = useState([]);
+
+  const addToPlaylist = (song) => {
+    if (!playlist.some((s) => s.id === song.id)) {
+      setPlaylist([...playlist, song]);
+    }
+  };
 
   useEffect(() => {
     const token = window.localStorage.getItem("token");
@@ -34,7 +42,7 @@ function App() {
       <div className="h-[100vh] w-[100vw] bg-white rounded-[30px] flex ">
         <Sidebar />
         <Routes>
-          <Route path="/" element={<Library />} />
+          <Route path="/" element={<Library playlist={playlist} />} />
           <Route
             path="/favorites"
             element={<Favorites favoriteSongs={favoriteSongs} />}
@@ -46,6 +54,7 @@ function App() {
               <Trending
                 favoriteSongs={favoriteSongs}
                 setFavoriteSongs={setFavoriteSongs}
+                addToPlaylist={addToPlaylist}
               />
             }
           />

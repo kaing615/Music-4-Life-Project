@@ -46,7 +46,7 @@ const Favorites = ({ favoriteSongs }) => {
 
               {/* Thông tin bài hát */}
               <div className="flex-1">
-                <h3 className="text-lg font-semibold">{song.title}</h3>
+                <h3 className="text-lg font-semibold">{song.name}</h3>
                 <p className="text-sm text-gray-400">{song.artist}</p>
               </div>
             </div>

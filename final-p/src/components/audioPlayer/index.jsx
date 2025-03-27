@@ -3,21 +3,22 @@ import ProgressCircle from "./ProgressCircle";
 import "./AudioPlayer.css";
 import WaveAnimation from "./WaveAnimation";
 import Controls from "./Controls";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import YouTube from "react-youtube";
 
 const AudioPlayer = ({ currentIndex, setCurrentIndex, total }) => {
   const location = useLocation();
-  const navigate = useNavigate();
+  const playlist = location.state?.playlist || null;
   const songFromTrending = location.state?.song || null;
-
-  const currentTrack = songFromTrending || total[currentIndex]?.track;
-  const audioSrc = currentTrack?.preview_url;
-  const youtubeID = songFromTrending?.youtubeID;
 
   const [isPlaying, setIsPlaying] = useState(true);
   const [trackProgress, setTrackProgress] = useState(0);
   const [isYouTubePlaying, setIsYouTubePlaying] = useState(false);
+
+  const tracks = playlist ? playlist.songs : total;
+  const currentTrack = songFromTrending || tracks[currentIndex] || null;
+  const audioSrc = currentTrack?.preview_url;
+  const youtubeID = currentTrack?.youtubeID;
 
   const audioRef = useRef(new Audio(audioSrc));
   const youtubeRef = useRef(null);
@@ -27,28 +28,36 @@ const AudioPlayer = ({ currentIndex, setCurrentIndex, total }) => {
   const { duration } = audioRef.current;
   const currentPercentage = duration ? (trackProgress / duration) * 100 : 0;
 
-  const handleSongEnd = () => {
-    // Nếu đang phát từ Trending, điều hướng về trang trending
-    navigate("/trending");
-  };
+  const hasPrev = currentIndex > 0;
+  const hasNext = currentIndex < tracks.length - 1;
 
-  const startTimer = () => {
-    clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => {
-      if (audioRef.current.ended) {
-        handleNext();
-      } else {
-        setTrackProgress(audioRef.current.currentTime);
+  useEffect(() => {
+    console.log("Bài hát hiện tại:", currentTrack);
+  }, [currentTrack]);
+
+  useEffect(() => {
+    if (currentTrack) {
+      const newAudioSrc = currentTrack.preview_url;
+      if (newAudioSrc) {
+        audioRef.current.pause();
+        audioRef.current = new Audio(newAudioSrc);
+        setTrackProgress(0);
+        if (isReady.current) {
+          audioRef.current.play();
+          setIsPlaying(true);
+          startTimer();
+        } else {
+          isReady.current = true;
+        }
       }
-    }, 1000);
-  };
+    }
+  }, [currentTrack]); // Thêm currentTrack vào dependency
 
   useEffect(() => {
     if (audioSrc && !youtubeID) {
       audioRef.current.pause();
       audioRef.current = new Audio(audioSrc);
-      setTrackProgress(0); // Reset thời gian phát
-
+      setTrackProgress(0);
       if (isReady.current) {
         audioRef.current.play();
         setIsPlaying(true);
@@ -62,7 +71,7 @@ const AudioPlayer = ({ currentIndex, setCurrentIndex, total }) => {
       youtubeRef.current.internalPlayer.loadVideoById(youtubeID);
       setIsYouTubePlaying(true);
     }
-  }, [currentIndex, songFromTrending]);
+  }, [currentIndex, playlist]);
 
   useEffect(() => {
     if (!youtubeID) {
@@ -83,8 +92,19 @@ const AudioPlayer = ({ currentIndex, setCurrentIndex, total }) => {
     };
   }, []);
 
+  const startTimer = () => {
+    clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      if (audioRef.current.ended) {
+        handleNext();
+      } else {
+        setTrackProgress(audioRef.current.currentTime);
+      }
+    }, 1000);
+  };
+
   const handleNext = () => {
-    if (currentIndex < total.length - 1) {
+    if (currentIndex < tracks.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
       setCurrentIndex(0);
@@ -93,7 +113,7 @@ const AudioPlayer = ({ currentIndex, setCurrentIndex, total }) => {
 
   const handlePrev = () => {
     if (currentIndex - 1 < 0) {
-      setCurrentIndex(total.length - 1);
+      setCurrentIndex(tracks.length - 1);
     } else {
       setCurrentIndex(currentIndex - 1);
     }
@@ -104,10 +124,10 @@ const AudioPlayer = ({ currentIndex, setCurrentIndex, total }) => {
       if (youtubeRef.current) {
         if (isYouTubePlaying) {
           youtubeRef.current.internalPlayer.pauseVideo();
-          setIsPlaying(false); // Cập nhật trạng thái chung
+          setIsPlaying(false);
         } else {
           youtubeRef.current.internalPlayer.playVideo();
-          setIsPlaying(true); // Cập nhật trạng thái chung
+          setIsPlaying(true);
         }
       }
       setIsYouTubePlaying(!isYouTubePlaying);
@@ -116,21 +136,14 @@ const AudioPlayer = ({ currentIndex, setCurrentIndex, total }) => {
     }
   };
 
-  const addZero = (n) => (n > 9 ? "" + n : "0" + n);
-
-  const songImage =
-    songFromTrending?.cover ||
-    currentTrack?.album?.images[0]?.url ||
-    "default-image.jpg";
-  const artists = songFromTrending
-    ? [songFromTrending.artist]
-    : currentTrack?.album?.artists.map((artist) => artist.name) || [];
+  const songImage = currentTrack?.cover || "default-image.jpg";
+  const artists = currentTrack?.artist || [];
 
   return (
     <div className="player-body flex">
       <div className="player-left-body">
         <ProgressCircle
-          percentage={75}
+          percentage={currentPercentage}
           isPlaying={isPlaying || isYouTubePlaying}
           image={songImage}
           size={300}
@@ -139,35 +152,31 @@ const AudioPlayer = ({ currentIndex, setCurrentIndex, total }) => {
       </div>
 
       <div className="player-right-body flex">
-        <p className="song-title">
-          {currentTrack?.name || songFromTrending?.title}
-        </p>
-        <p className="song-artist my-[20px]">{artists.join(" | ")}</p>
+        <p className="song-title">{currentTrack?.name}</p>
+        <p className="song-artist my-[20px]">{artists}</p>
         <div className="player-right-bottom flex">
-          {songFromTrending ? (
+          {youtubeID ? (
             <YouTube
               videoId={youtubeID}
               ref={youtubeRef}
               opts={{
                 height: "0",
                 width: "0",
-                playerVars: {
-                  autoplay: 1,
-                  controls: 0,
-                },
+                playerVars: { autoplay: 1, controls: 0 },
               }}
               onPlay={() => setIsYouTubePlaying(true)}
               onPause={() => setIsYouTubePlaying(false)}
-              onEnd={handleSongEnd}
             />
           ) : (
             <WaveAnimation isPlaying={isPlaying} />
           )}
           <Controls
-            isPlaying={isPlaying || isYouTubePlaying} // Đảm bảo cập nhật đúng trạng thái
+            isPlaying={isPlaying || isYouTubePlaying}
             setIsPlaying={togglePlayPause}
             handleNext={handleNext}
             handlePrev={handlePrev}
+            hasPrev={hasPrev}
+            hasNext={hasNext}
           />
         </div>
       </div>
