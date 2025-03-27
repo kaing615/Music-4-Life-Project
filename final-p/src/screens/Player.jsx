@@ -51,7 +51,7 @@ const Player = () => {
   const backgroundImage = songFromTrending ? songFromTrending?.cover : null;
 
   const backToTrending = () => {
-    navigate("/trending"); // Chuyển hướng đến trang /trending
+    navigate("/trending");
   };
 
   return (
@@ -94,7 +94,6 @@ const Player = () => {
                 setCurrentIndex={setCurrentIndex}
               />
             )}
-            {currentTrack?.album && <Widgets artistID={currentTrack.album} />}
           </div>
 
           <div className="right-player-body">
