@@ -66,8 +66,14 @@ const Player = () => {
         backgroundRepeat: "no-repeat",
       }}
     >
-      {songFromTrending ? (
-        // Nếu đang phát bài hát từ Trending
+      {/* Kiểm tra nếu không có bài hát nào */}
+      {!currentTrack && tracks.length === 0 && !songFromTrending ? (
+        <div className="w-full h-full flex justify-center items-center">
+          <p className="text-white text-2xl font-bold">
+            Không có bài hát nào được phát
+          </p>
+        </div>
+      ) : songFromTrending ? (
         <div className="w-full flex justify-center items-center">
           <IoMdArrowRoundBack
             onClick={backToTrending}
@@ -83,7 +89,6 @@ const Player = () => {
           )}
         </div>
       ) : (
-        // Nếu đang phát playlist
         <>
           <div className="left-player-body">
             {currentTrack && (
